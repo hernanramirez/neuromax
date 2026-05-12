@@ -18,6 +18,8 @@ urlpatterns = [
     # User management
     path("users/", include("apps.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
+    # NeuroMax — Tutor Socrático + Motor KST
+    path("", include("apps.tutor.urls", namespace="tutor")),
     # Your stuff: custom urls includes go here
     # ...
     # Media files

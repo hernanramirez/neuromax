@@ -1,0 +1,196 @@
+{% extends 'layout_vertical.html' %}
+{% load static i18n %}
+
+{% block title %}{{ clase.nombre }} — Detalle de Clase{% endblock %}
+
+{% block extra_css %}
+<style>
+  .estudiante-row:hover { background: #f8faff; }
+  .kst-mini { height:6px; border-radius:3px; background:#e9ecef; }
+  .kst-mini-fill { height:100%; border-radius:3px;
+    background: linear-gradient(90deg,#6366f1,#8b5cf6); }
+  .nivel-dot { width:10px;height:10px;border-radius:50%;display:inline-block; }
+  .stat-sm { font-size:1.4rem; font-weight:700; }
+</style>
+{% endblock %}
+
+{% block page_title %}
+{% include "partials/page-title.html" with page_title=clase.nombre sub_title='Detalle de Clase' %}
+{% endblock %}
+
+{% block page_content %}
+
+{# ── INFO DE LA CLASE ── #}
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-start justify-content-between">
+          <div>
+            <h4 class="fw-bold mb-1">{{ clase.nombre }}</h4>
+            {% if clase.descripcion %}
+              <p class="text-muted mb-2">{{ clase.descripcion }}</p>
+            {% endif %}
+            <div class="d-flex align-items-center gap-2 mt-2">
+              <span class="text-muted small">Código de unión:</span>
+              <span class="badge bg-primary fs-13 px-3 py-1" style="font-family:monospace;letter-spacing:.1em">
+                {{ clase.codigo_union }}
+              </span>
+              <button class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size:.75rem"
+                      onclick="navigator.clipboard.writeText('{{ clase.codigo_union }}')">
+                <iconify-icon icon="iconamoon:copy-duotone"></iconify-icon>
+              </button>
+            </div>
+          </div>
+          <a href="{% url 'tutor:dashboard' %}" class="btn btn-light btn-sm">
+            <iconify-icon icon="iconamoon:arrow-left-2-duotone" class="me-1"></iconify-icon>Volver
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="row text-center g-2">
+          <div class="col-4">
+            <p class="stat-sm text-primary">{{ clase.total_estudiantes }}</p>
+            <small class="text-muted">Estudiantes</small>
+          </div>
+          <div class="col-4">
+            <p class="stat-sm text-success">{{ problemas|length }}</p>
+            <small class="text-muted">Problemas</small>
+          </div>
+          <div class="col-4">
+            <p class="stat-sm text-warning">
+              {% with total=estudiantes_data|length %}
+                {% if total > 0 %}
+                  {{ distribucion_kst.3 }}/{{ total }}
+                {% else %}—{% endif %}
+              {% endwith %}
+            </p>
+            <small class="text-muted">Fase 4 KST</small>
+          </div>
+        </div>
+        {# Distribución KST simplificada #}
+        <div class="mt-3">
+          <small class="text-muted d-block mb-1">Distribución KST del grupo</small>
+          <div class="d-flex gap-1 align-items-end" style="height:30px">
+            {% for cant in distribucion_kst %}
+            <div class="flex-fill rounded-top"
+                 style="background:{% if forloop.counter == 1 %}#e0e7ff{% elif forloop.counter == 2 %}#a5b4fc{% elif forloop.counter == 3 %}#6366f1{% else %}#4338ca{% endif %};
+                        height:{% if cant > 0 %}{% widthratio cant estudiantes_data|length 100 %}%{% else %}4px{% endif %}"
+                 title="Fase {{ forloop.counter }}: {{ cant }} estudiantes">
+            </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex justify-content-between mt-1">
+            {% for i in "1234" %}<small class="text-muted" style="font-size:.65rem">F{{ forloop.counter }}</small>{% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── TABLA DE ESTUDIANTES ── #}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+    <h5 class="mb-0 fw-semibold">
+      <iconify-icon icon="iconamoon:user-duotone" class="text-primary me-2"></iconify-icon>
+      Estudiantes ({{ clase.total_estudiantes }})
+    </h5>
+    <div class="d-flex gap-2">
+      <input type="search" id="buscarEstudiante" class="form-control form-control-sm"
+             placeholder="Buscar estudiante..." style="width:200px"
+             oninput="filtrarTabla(this.value)">
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-centered mb-0" id="tablaEstudiantes">
+      <thead class="bg-light">
+        <tr>
+          <th class="ps-3 py-2">Estudiante</th>
+          <th class="py-2">Nivel KST</th>
+          <th class="py-2">Progreso</th>
+          <th class="py-2">Problemas</th>
+          <th class="py-2">Iadov prom.</th>
+          <th class="py-2">Último acceso</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ed in estudiantes_data %}
+        <tr class="estudiante-row">
+          <td class="ps-3 py-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-xs rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                   style="background:hsl({{ forloop.counter0|add:1 }}00,60%,50%);min-width:32px;font-size:.75rem">
+                {{ ed.inscripcion.estudiante.perfil.nombre_completo|first|upper }}
+              </div>
+              <div>
+                <p class="mb-0 fw-medium" style="font-size:.88rem">
+                  {{ ed.inscripcion.estudiante.perfil.nombre_completo|default:ed.inscripcion.estudiante.email }}
+                </p>
+                <small class="text-muted">{{ ed.inscripcion.estudiante.email }}</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="nivel-dot" style="background:{% if ed.nivel_kst >= 3 %}#10b981{% elif ed.nivel_kst >= 2 %}#f59e0b{% else %}#94a3b8{% endif %}"></span>
+              <span class="fw-semibold">{{ ed.nivel_kst }}</span><small class="text-muted">/4</small>
+            </div>
+          </td>
+          <td style="min-width:100px">
+            <div class="kst-mini">
+              <div class="kst-mini-fill" style="width:{% widthratio ed.nivel_kst 4 100 %}%"></div>
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-soft-success me-1">{{ ed.problemas_resueltos }} ✓</span>
+            <small class="text-muted">de {{ ed.interacciones }}</small>
+          </td>
+          <td>
+            {% if ed.iadov_promedio != '—' %}
+              <span class="fw-medium">
+                {% if ed.iadov_promedio >= 4 %}🤩{% elif ed.iadov_promedio >= 3 %}🙂{% else %}😐{% endif %}
+                {{ ed.iadov_promedio }}
+              </span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if ed.ultimo_acceso %}
+              <small class="text-muted">{{ ed.ultimo_acceso|timesince }} atrás</small>
+            {% else %}
+              <small class="text-muted">Sin actividad</small>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            <iconify-icon icon="iconamoon:user-duotone" class="fs-2 mb-2 d-block opacity-25"></iconify-icon>
+            No hay estudiantes inscritos aún. Comparte el código <strong>{{ clase.codigo_union }}</strong>.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_javascript %}
+<script>
+function filtrarTabla(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#tablaEstudiantes tbody tr.estudiante-row').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

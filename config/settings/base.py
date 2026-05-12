@@ -89,7 +89,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "apps.users",
-    # Your stuff: custom apps go here
+    "apps.tutor",  # NeuroMax — Tutor Socrático + Motor KST
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -329,3 +329,15 @@ SOCIALACCOUNT_FORMS = {"signup": "apps.users.forms.UserSocialSignupForm"}
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+# NeuroMax — Proveedor de IA para el Tutor Socrático
+# Opciones: "gemini" | "groq"
+# Groq recomendado para uso educativo no comercial (gratuito, sin límites de billing)
+TUTOR_AI_PROVIDER = env("TUTOR_AI_PROVIDER", default="groq")
+
+GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+
+# Groq: gratuito para proyectos educativos — https://console.groq.com
+# Modelos recomendados: llama-3.3-70b-versatile | llama-3.1-8b-instant (más rápido)
+GROQ_API_KEY = env("GROQ_API_KEY", default="")
+GROQ_MODEL = env("GROQ_MODEL", default="llama-3.3-70b-versatile")

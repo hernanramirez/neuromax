@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class TutorConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.tutor"
+    verbose_name = "Tutor Socrático NeuroMax"
+
+    def ready(self):
+        pass  # Reserved for signals

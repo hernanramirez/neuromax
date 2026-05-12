@@ -24,7 +24,7 @@ Por favor, estructura el desarrollo en los siguientes 4 pasos secuenciales. **No
 
 ### Paso 2: Lógica del Motor KST y Controladores (`views.py`)
 * Crea un "Dashboard Multi-clase" para el docente, donde pueda seleccionar una de sus clases y ver el estado de conocimiento de ese grupo en específico.
-* Estructura la vista del estudiante que actúe como el Motor KST, evaluando silenciosamente los prerrequisitos visuales antes de permitirle avanzar al problema principal. Todas estas vistas deben apuntar a `apps/templates/pages/`.
+* Estructura la vista del estudiante que actúe como el Motor KST, evaluando silenciosamente los prerrequisitos visuales antes de permitirle avanzar al problema principal. Todas estas vistas deben utilizae los demos a `apps/templates/pages/`.
 
 ### Paso 3: Integración de la API de Gemini (`services.py` y Tutor Socrático)
 * Crea un servicio utilizando el SDK `google-generativeai`.
@@ -34,3 +34,6 @@ Por favor, estructura el desarrollo en los siguientes 4 pasos secuenciales. **No
 ### Paso 4: Integración del Front-End (Templates de Bootstrap)
 * Proporcióname los esquemas HTML con clases de Bootstrap que coincidan con la ruta `apps/templates/pages/`.
 * Necesitaremos un esquema para `dashboard_docente.html` (con tarjetas o tablas para las múltiples clases) y `tutor_interactivo.html` (con el componente visual del problema y el componente de chat de Gemini).
+
+
+Adicinalmente tenemoos 3 demos en la carpeta `docs/CodeDemo` que se pueden utilizar comoo referencia para la generación de este proyecto

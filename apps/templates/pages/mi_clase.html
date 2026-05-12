@@ -1,0 +1,152 @@
+{% extends 'layout_vertical.html' %}
+{% load static i18n %}
+
+{% block title %}Mi Clase — {{ clase.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .problema-card {
+    border-radius: 14px; border: 2px solid transparent;
+    transition: all .2s; cursor: pointer; position: relative; overflow: hidden;
+  }
+  .problema-card:hover:not(.bloqueado) { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+  .problema-card.completado { border-color: #10b981; }
+  .problema-card.en_progreso { border-color: #f59e0b; }
+  .problema-card.pendiente  { border-color: #e2e8f0; }
+  .problema-card.bloqueado  { opacity: .55; cursor: not-allowed; }
+
+  .nivel-stars { color: #fbbf24; font-size: .85rem; }
+  .tema-chip {
+    font-size:.72rem; font-weight:600; padding:2px 10px;
+    border-radius:20px; text-transform:uppercase; letter-spacing:.05em;
+  }
+  .tema-FRACCIONES { background:#dbeafe; color:#1e40af; }
+  .tema-EXPONENCIACION { background:#fce7f3; color:#9d174d; }
+
+  .estado-icon { position:absolute; top:12px; right:12px; font-size:1.2rem; }
+  .progreso-general { height:10px; border-radius:5px; background:#e9ecef; }
+  .progreso-fill { height:100%; border-radius:5px;
+    background:linear-gradient(90deg,#6366f1,#10b981); transition:width .8s ease; }
+</style>
+{% endblock %}
+
+{% block page_title %}
+{% include "partials/page-title.html" with page_title='Mi Clase' sub_title=clase.nombre %}
+{% endblock %}
+
+{% block page_content %}
+
+{# ── CABECERA DE CLASE ── #}
+<div class="card border-0 shadow-sm mb-4" style="background:linear-gradient(135deg,#4338ca,#7c3aed); color:white">
+  <div class="card-body p-4">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h4 class="text-white mb-1 fw-bold">{{ clase.nombre }}</h4>
+        <p class="mb-0 opacity-75">{{ clase.descripcion|default:"1er Año de Bachillerato — COSAFAM" }}</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        {# Progreso global del estudiante #}
+        {% with total=problemas_data|length resueltos=0 %}
+        {% for pd in problemas_data %}{% if pd.estado == 'completado' %}{% with r=resueltos|add:1 %}{% endwith %}{% endif %}{% endfor %}
+        <p class="text-white opacity-75 small mb-1">Tu progreso general</p>
+        <div class="progreso-general">
+          <div class="progreso-fill"
+               style="width:{% for pd in problemas_data %}{% if pd.estado == 'completado' %}x{% endif %}{% endfor %}0%">
+          </div>
+        </div>
+        {% endwith %}
+        <small class="opacity-75">
+          {{ problemas_data|length }} problema{{ problemas_data|length|pluralize:"s" }} disponible{{ problemas_data|length|pluralize:"s" }}
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── PROBLEMAS POR TEMA ── #}
+{% regroup problemas_data by problema.get_tema_display as temas_list %}
+
+{% for tema_group in temas_list %}
+<div class="mb-4">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <iconify-icon icon="{% if 'Fracci' in tema_group.grouper %}iconamoon:calculator-duotone{% else %}iconamoon:lightning-duotone{% endif %}"
+                  class="text-primary fs-22"></iconify-icon>
+    <h5 class="mb-0 fw-semibold">{{ tema_group.grouper }}</h5>
+    <span class="badge bg-light text-dark">{{ tema_group.list|length }} problema{{ tema_group.list|length|pluralize:"s" }}</span>
+  </div>
+
+  <div class="row g-3">
+    {% for pd in tema_group.list %}
+    <div class="col-md-6 col-xl-3">
+      <div class="card problema-card {{ pd.estado }} {% if pd.bloqueado %}bloqueado{% endif %} h-100">
+
+        {# Ícono de estado #}
+        <span class="estado-icon">
+          {% if pd.estado == 'completado' %}✅
+          {% elif pd.estado == 'en_progreso' %}⏳
+          {% elif pd.bloqueado %}🔒
+          {% else %}📖{% endif %}
+        </span>
+
+        <div class="card-body pb-2">
+          {# Tema + nivel #}
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="tema-chip tema-{{ pd.problema.tema }}">{{ pd.problema.get_tema_display }}</span>
+          </div>
+
+          {# Estrellas KST #}
+          <div class="nivel-stars mb-2">
+            {% for i in "1234" %}
+              {% if forloop.counter <= pd.problema.nivel_kst %}★{% else %}☆{% endif %}
+            {% endfor %}
+            <small class="text-muted ms-1">Nivel {{ pd.problema.nivel_kst }}</small>
+          </div>
+
+          <h6 class="card-title fw-semibold mb-2" style="font-size:.92rem">{{ pd.problema.titulo }}</h6>
+          <p class="text-muted mb-0" style="font-size:.8rem">{{ pd.problema.enunciado|truncatewords:12 }}</p>
+        </div>
+
+        <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3">
+          {% if pd.bloqueado %}
+            <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+              🔒 Completa el nivel anterior
+            </button>
+          {% elif pd.estado == 'completado' %}
+            <a href="{% url 'tutor:tutor_interactivo' pd.problema.pk %}"
+               class="btn btn-outline-success btn-sm w-100">
+              <iconify-icon icon="iconamoon:eye-duotone" class="me-1"></iconify-icon>Ver resolución
+            </a>
+          {% else %}
+            <a href="{% url 'tutor:tutor_interactivo' pd.problema.pk %}"
+               class="btn btn-primary btn-sm w-100">
+              {% if pd.estado == 'en_progreso' %}
+                <iconify-icon icon="iconamoon:play-circle-duotone" class="me-1"></iconify-icon>Continuar
+              {% else %}
+                <iconify-icon icon="iconamoon:rocket-1-duotone" class="me-1"></iconify-icon>Iniciar
+              {% endif %}
+            </a>
+          {% endif %}
+
+          {# Indicador de intentos #}
+          {% if pd.interaccion and pd.interaccion.intentos > 0 %}
+            <div class="text-center mt-1">
+              <small class="text-muted" style="font-size:.7rem">
+                {{ pd.interaccion.intentos }} intento{{ pd.interaccion.intentos|pluralize:"s" }} •
+                {{ pd.interaccion.pistas_dadas|length }} pista{{ pd.interaccion.pistas_dadas|length|pluralize:"s" }}
+              </small>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% empty %}
+<div class="text-center py-5">
+  <iconify-icon icon="iconamoon:books-duotone" class="fs-1 text-muted opacity-25"></iconify-icon>
+  <p class="text-muted mt-3">Tu profesor/a aún no ha publicado problemas para esta clase.</p>
+</div>
+{% endfor %}
+
+{% endblock %}

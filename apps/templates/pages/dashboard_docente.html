@@ -1,0 +1,242 @@
+{% extends 'layout_vertical.html' %}
+{% load static i18n %}
+
+{% block title %}Dashboard Docente — NeuroMax{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── KST Progress Bar ── */
+  .kst-bar { height: 8px; border-radius: 4px; background: #e9ecef; overflow: hidden; }
+  .kst-fill { height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6); transition: width .6s ease; }
+  /* ── Clase card hover ── */
+  .clase-card { transition: transform .2s, box-shadow .2s; border: none; }
+  .clase-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(99,102,241,.18) !important; }
+  /* ── Código badge ── */
+  .codigo-badge {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: .85rem; letter-spacing: .12em;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    color: #fff; padding: 3px 12px; border-radius: 6px;
+    cursor: pointer; user-select: all;
+  }
+  /* ── Stat card icon bg ── */
+  .stat-icon { width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem; }
+  /* ── Fade-in animación ── */
+  .fade-in { animation: fadeIn .5s ease forwards; opacity:0; }
+  @keyframes fadeIn { to { opacity:1; } }
+</style>
+{% endblock %}
+
+{% block page_title %}
+  {% include "partials/page-title.html" with page_title='Dashboard Docente' sub_title='NeuroMax — COSAFAM' %}
+{% endblock %}
+
+{% block page_content %}
+
+{# ── STATS CARDS ── #}
+<div class="row g-3 mb-4">
+  <div class="col-xl-3 col-md-6 fade-in" style="animation-delay:.05s">
+    <div class="card clase-card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon" style="background:#ede9fe"><iconify-icon icon="iconamoon:books-duotone" class="text-purple fs-28"></iconify-icon></div>
+          <div>
+            <h3 class="mb-0 fw-bold">{{ total_clases }}</h3>
+            <p class="text-muted mb-0 small">Clases activas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6 fade-in" style="animation-delay:.1s">
+    <div class="card clase-card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon" style="background:#d1fae5"><iconify-icon icon="iconamoon:user-duotone" class="text-success fs-28"></iconify-icon></div>
+          <div>
+            <h3 class="mb-0 fw-bold">{{ total_estudiantes }}</h3>
+            <p class="text-muted mb-0 small">Estudiantes inscritos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6 fade-in" style="animation-delay:.15s">
+    <div class="card clase-card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon" style="background:#fef3c7"><iconify-icon icon="iconamoon:brain-duotone" class="text-warning fs-28"></iconify-icon></div>
+          <div>
+            <h3 class="mb-0 fw-bold">{{ total_interacciones }}</h3>
+            <p class="text-muted mb-0 small">Interacciones IA</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6 fade-in" style="animation-delay:.2s">
+    <div class="card clase-card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon" style="background:#fee2e2"><iconify-icon icon="iconamoon:star-duotone" class="text-danger fs-28"></iconify-icon></div>
+          <div>
+            <h3 class="mb-0 fw-bold">{{ promedio_iadov }}<small class="fs-14 text-muted">/5</small></h3>
+            <p class="text-muted mb-0 small">Satisfacción Iadov</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── HEADER SECCIÓN CLASES ── #}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0 fw-semibold">Mis Clases</h4>
+  <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNuevaClase">
+    <iconify-icon icon="iconamoon:plus-circle-duotone" class="me-1"></iconify-icon> Nueva Clase
+  </button>
+</div>
+
+{# ── GRID DE CLASES ── #}
+{% if clases %}
+<div class="row g-3">
+  {% for clase in clases %}
+  <div class="col-xl-4 col-md-6 fade-in" style="animation-delay:{{ forloop.counter0 | add:2 }}00ms">
+    <div class="card clase-card shadow-sm h-100">
+      <div class="card-body">
+        {# Nombre + código #}
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h5 class="card-title mb-0 fw-semibold" style="max-width:65%">{{ clase.nombre }}</h5>
+          <span class="codigo-badge" onclick="copiarCodigo('{{ clase.codigo_union }}')"
+                title="Clic para copiar">{{ clase.codigo_union }}</span>
+        </div>
+        {# Descripción #}
+        {% if clase.descripcion %}
+          <p class="text-muted small mb-3">{{ clase.descripcion|truncatewords:15 }}</p>
+        {% endif %}
+        {# Métricas #}
+        <div class="d-flex gap-3 mb-3">
+          <div class="text-center">
+            <span class="fw-bold fs-5">{{ clase.num_estudiantes }}</span>
+            <p class="text-muted mb-0" style="font-size:.72rem">Estudiantes</p>
+          </div>
+          <div class="vr"></div>
+          <div class="text-center">
+            <span class="fw-bold fs-5">{% if clase.promedio_kst %}{{ clase.promedio_kst|floatformat:1 }}{% else %}—{% endif %}</span>
+            <p class="text-muted mb-0" style="font-size:.72rem">Nivel KST prom.</p>
+          </div>
+          <div class="vr"></div>
+          <div class="text-center">
+            <span class="fw-bold fs-5">{{ clase.fecha_creacion|date:"d/m/y" }}</span>
+            <p class="text-muted mb-0" style="font-size:.72rem">Creada</p>
+          </div>
+        </div>
+        {# Barra KST #}
+        {% if clase.promedio_kst %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <small class="text-muted">Progreso KST del grupo</small>
+            <small class="text-muted">{{ clase.promedio_kst|floatformat:0 }}/4</small>
+          </div>
+          <div class="kst-bar">
+            <div class="kst-fill" style="width:{% widthratio clase.promedio_kst 4 100 %}%"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-footer bg-transparent border-0 d-flex gap-2 pt-0 pb-3 px-3">
+        <a href="{% url 'tutor:detalle_clase' clase.pk %}" class="btn btn-soft-primary btn-sm flex-fill">
+          <iconify-icon icon="iconamoon:eye-duotone" class="me-1"></iconify-icon>Ver detalle
+        </a>
+        <button class="btn btn-soft-secondary btn-sm"
+                onclick="copiarCodigo('{{ clase.codigo_union }}')"
+                title="Compartir código de unión">
+          <iconify-icon icon="iconamoon:copy-duotone"></iconify-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+{# Estado vacío #}
+<div class="card border-dashed text-center py-5">
+  <div class="card-body">
+    <iconify-icon icon="iconamoon:books-duotone" class="fs-1 text-muted"></iconify-icon>
+    <h5 class="mt-3 text-muted">Aún no tienes clases creadas</h5>
+    <p class="text-muted small">Crea tu primera clase y comparte el código de unión con tus estudiantes del COSAFAM.</p>
+    <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#modalNuevaClase">
+      Crear primera clase
+    </button>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{# ── MODAL: NUEVA CLASE ── #}
+{% block modal %}
+<div class="modal fade" id="modalNuevaClase" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'tutor:dashboard' %}">
+        {% csrf_token %}
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-semibold">
+            <iconify-icon icon="iconamoon:plus-circle-duotone" class="text-primary me-2"></iconify-icon>
+            Nueva Clase
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          {% if form_clase.errors %}
+            <div class="alert alert-danger py-2 small">{{ form_clase.errors }}</div>
+          {% endif %}
+          <div class="mb-3">
+            <label class="form-label fw-medium">{{ form_clase.nombre.label }}</label>
+            {{ form_clase.nombre }}
+            <div class="form-text">Ej: 1er Año de Bachillerato A — COSAFAM 2026</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium">{{ form_clase.descripcion.label }} <span class="text-muted">(opcional)</span></label>
+            {{ form_clase.descripcion }}
+          </div>
+          <div class="alert alert-info py-2 small mb-0">
+            <iconify-icon icon="iconamoon:information-circle-duotone" class="me-1"></iconify-icon>
+            El <strong>código de unión</strong> se generará automáticamente. Compártelo con tus estudiantes para que se inscriban.
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <iconify-icon icon="iconamoon:check-circle-1-duotone" class="me-1"></iconify-icon>Crear Clase
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_javascript %}
+<script>
+function copiarCodigo(codigo) {
+  navigator.clipboard.writeText(codigo).then(() => {
+    // Toast de confirmación usando Bootstrap
+    const toastHtml = `
+      <div id="toastCopia" class="toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-3" role="alert" style="z-index:9999">
+        <div class="d-flex">
+          <div class="toast-body fw-medium">✓ Código <strong>${codigo}</strong> copiado al portapapeles</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      </div>`;
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toast = new bootstrap.Toast(document.getElementById('toastCopia'), { delay: 2500 });
+    toast.show();
+    document.getElementById('toastCopia').addEventListener('hidden.bs.toast', e => e.target.remove());
+  });
+}
+</script>
+{% endblock %}

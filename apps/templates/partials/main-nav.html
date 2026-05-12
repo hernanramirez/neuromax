@@ -31,48 +31,32 @@
         </a>
       </li>
 
-      <li class="menu-title">Acceso (NFC)</li>
+      <li class="menu-title">NeuroMax (COSAFAM)</li>
 
+      {% if user.is_authenticated and user.perfil.es_profesor %}
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'acceso:dashboard' %}">
+        <a class="nav-link" href="{% url 'tutor:dashboard' %}">
           <span class="nav-icon">
-            <iconify-icon icon="iconamoon:shield-yes-duotone"></iconify-icon>
+            <iconify-icon icon="iconamoon:books-duotone"></iconify-icon>
           </span>
-          <span class="nav-text"> Monitoreo de Acceso </span>
+          <span class="nav-text"> Dashboard Docente </span>
         </a>
       </li>
+      {% endif %}
 
-      <li class="menu-title">Cafetería (NFC)</li>
-
+      {% if user.is_authenticated and user.perfil.es_estudiante %}
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'pagos:dashboard' %}">
+        <a class="nav-link" href="{% url 'tutor:mi_clase' %}">
           <span class="nav-icon">
-            <iconify-icon icon="iconamoon:store-duotone"></iconify-icon>
+            <iconify-icon icon="iconamoon:certificate-badge-duotone"></iconify-icon>
           </span>
-          <span class="nav-text"> Punto de Venta </span>
+          <span class="nav-text"> Mi Clase </span>
         </a>
       </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'pagos:balance' %}">
-          <span class="nav-icon">
-            <iconify-icon icon="iconamoon:wallet-duotone"></iconify-icon>
-          </span>
-          <span class="nav-text"> Mi Saldo </span>
-        </a>
-      </li>
+      {% endif %}
 
       <li class="menu-title">Configuración</li>
 
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'users:list' %}">
-          <span class="nav-icon">
-            <iconify-icon icon="iconamoon:profile-duotone"></iconify-icon>
-          </span>
-          <span class="nav-text"> Gestión de Usuarios </span>
-        </a>
-      </li>
-      
       <li class="nav-item">
         <a class="nav-link" href="/admin/">
           <span class="nav-icon">

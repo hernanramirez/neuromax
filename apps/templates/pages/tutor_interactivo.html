@@ -1,0 +1,488 @@
+{% extends 'layout_vertical.html' %}
+{% load static i18n %}
+
+{% block title %}Tutor Interactivo — {{ problema.titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ══════════════════════════════════════════
+   TUTOR INTERACTIVO — Estilos Pedagógicos
+   Inspirado en docs/CodeDemo/fracciones.html
+   ══════════════════════════════════════════ */
+
+/* Fondo sutil con patrón de puntos */
+.tutor-wrapper {
+  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+  background-size: 22px 22px;
+  min-height: calc(100vh - 70px);
+}
+
+/* ── Cards de Fase ── */
+.fase-card {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.07);
+  transition: box-shadow .2s;
+}
+.fase-badge {
+  width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:.85rem; flex-shrink:0;
+}
+
+/* ── Animaciones ── */
+.fade-in-up {
+  animation: fadeInUp .55s cubic-bezier(.16,1,.3,1) forwards;
+  opacity:0; transform:translateY(16px);
+}
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+
+/* ── Botones de activación cognitiva ── */
+.btn-activacion {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: .55rem 1.2rem;
+  background: white;
+  transition: all .2s;
+  font-weight: 500;
+  color: #475569;
+}
+.btn-activacion:hover { border-color: #6366f1; background: #eef2ff; color: #6366f1; }
+.btn-activacion.correcto { border-color: #10b981; background: #d1fae5; color: #065f46; }
+.btn-activacion.incorrecto { border-color: #f59e0b; background: #fef3c7; color: #92400e; }
+.btn-activacion:disabled { opacity:.6; cursor:not-allowed; }
+
+/* ── Chat ── */
+.chat-window {
+  height: 360px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+.chat-window::-webkit-scrollbar { width:5px; }
+.chat-window::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+
+.chat-bubble-user {
+  background: #6366f1; color:white;
+  border-radius: 18px 18px 4px 18px;
+  padding: .65rem 1rem; max-width:80%;
+  font-size:.88rem; word-break:break-word;
+}
+.chat-bubble-bot {
+  background: white; color:#334155;
+  border-radius: 18px 18px 18px 4px;
+  padding: .65rem 1rem; max-width:85%;
+  font-size:.88rem; border:1px solid #e2e8f0;
+  word-break:break-word;
+}
+.chat-bubble-correcto {
+  background: #d1fae5; color:#065f46;
+  border-radius: 18px 18px 18px 4px;
+  padding: .65rem 1rem; max-width:85%;
+  font-size:.88rem; border:1px solid #a7f3d0;
+}
+.avatar-bot {
+  width:32px; height:32px; border-radius:50%;
+  background:#e0e7ff; display:flex; align-items:center;
+  justify-content:center; font-size:1rem; flex-shrink:0;
+}
+.avatar-user {
+  width:32px; height:32px; border-radius:50%;
+  background:#6366f1; display:flex; align-items:center;
+  justify-content:center; font-size:.65rem; color:white;
+  font-weight:700; flex-shrink:0;
+}
+/* Indicador de escritura */
+.typing-indicator span {
+  display:inline-block; width:7px; height:7px;
+  border-radius:50%; background:#94a3b8; margin:0 2px;
+  animation: bounce .9s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay:.15s; }
+.typing-indicator span:nth-child(3) { animation-delay:.3s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-7px)} }
+
+/* ── Liquid animation (componente visual) ── */
+.liquid-anim { animation:wave 2s infinite linear; transform-origin:bottom; }
+@keyframes wave {
+  0%{transform:scaleY(1) skewX(0deg)}
+  50%{transform:scaleY(1.02) skewX(1deg)}
+  100%{transform:scaleY(1) skewX(0deg)}
+}
+
+/* ── Fase 4: Iadov emojis ── */
+.emoji-iadov { font-size:1.8rem; cursor:pointer; opacity:.4; filter:grayscale(1); transition:all .2s; }
+.emoji-iadov:hover, .emoji-iadov.selected { opacity:1; filter:grayscale(0); transform:scale(1.3);
+  filter:drop-shadow(0 0 8px rgba(250,204,21,.8)); }
+</style>
+{% endblock %}
+
+{% block page_title %}
+{% include "partials/page-title.html" with page_title=problema.titulo sub_title=problema.get_tema_display %}
+{% endblock %}
+
+{% block page_content %}
+<div class="tutor-wrapper rounded-3 p-2">
+<div class="row g-3">
+
+  {# ═══════════════════════════════════════
+     COLUMNA IZQUIERDA — Problema + Visuals
+     ═══════════════════════════════════════ #}
+  <div class="col-lg-7">
+
+    {# ── FASE 1: Activación Cognitiva (Motor KST) ── #}
+    <div id="fase1" class="fase-card p-4 mb-3 fade-in-up" style="animation-delay:.1s">
+      <div class="d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
+        <div class="fase-badge bg-primary text-white">1</div>
+        <h5 class="mb-0 fw-semibold text-primary">Activación Cognitiva</h5>
+      </div>
+
+      {# Componente visual dinámico desde BD — visualizacion_html #}
+      {% if problema.visualizacion_html %}
+        <div class="mb-4 text-center">
+          {{ problema.visualizacion_html|safe }}
+        </div>
+      {% endif %}
+
+      {# Pregunta de activación desde activacion_cognitiva_json #}
+      <p class="text-center fw-medium mb-4" id="pregunta-activacion">
+        ⚡ {{ activacion.pregunta }}
+      </p>
+
+      <div id="opciones-activacion" class="d-flex flex-wrap justify-content-center gap-2">
+        {% for opcion in activacion.opciones %}
+          <button class="btn-activacion" id="btn-activacion-{{ forloop.counter }}"
+                  onclick="verificarActivacion('{{ opcion }}', this)">
+            {{ opcion }}
+          </button>
+        {% endfor %}
+      </div>
+
+      <div id="feedback-activacion" class="mt-3 text-center"></div>
+    </div>
+
+    {# ── FASE 2: El Desafío ── (oculta hasta pasar Fase 1) #}
+    <div id="fase2" class="fase-card p-4 mb-3 d-none">
+      <div class="d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
+        <div class="fase-badge bg-warning text-white">2</div>
+        <h5 class="mb-0 fw-semibold" style="color:#92400e">El Desafío</h5>
+      </div>
+
+      <div class="rounded-3 p-3 mb-3" style="background:#fffbeb; border:1px solid #fde68a;">
+        <p class="mb-0 text-slate-700 lh-lg" style="font-size:.95rem">
+          {{ problema.enunciado|linebreaksbr }}
+        </p>
+      </div>
+
+      {# Indicador de nivel KST #}
+      <div class="d-flex align-items-center gap-2 mt-2">
+        <small class="text-muted">Nivel KST:</small>
+        {% for i in "1234" %}
+          <iconify-icon icon="iconamoon:star{% if forloop.counter <= problema.nivel_kst %}-duotone{% else %}-thin{% endif %}"
+                        class="{% if forloop.counter <= problema.nivel_kst %}text-warning{% else %}text-muted{% endif %}"></iconify-icon>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# ── FASE 4: Cierre Metacognitivo ── (aparece al resolver) #}
+    <div id="fase4" class="fase-card p-4 d-none">
+      <div class="d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
+        <div class="fase-badge" style="background:#f43f5e; color:white">4</div>
+        <h5 class="mb-0 fw-semibold" style="color:#9f1239">Cierre Metacognitivo</h5>
+      </div>
+
+      <form method="post" action="{% url 'tutor:guardar_cierre' interaccion.pk %}">
+        {% csrf_token %}
+        <div class="row g-3">
+          {# Análisis del error #}
+          <div class="col-12">
+            <div class="rounded-3 p-3" style="background:#fef2f2; border:1px solid #fecaca">
+              <p class="text-danger small fw-medium mb-2">👾 Análisis de Errores:</p>
+              <p class="text-secondary small mb-2">
+                Tu compañero virtual intentó resolver el problema pero cometió un error común.
+                Explica en una frase por qué su razonamiento es incorrecto:
+              </p>
+              <textarea name="analisis_error" class="form-control form-control-sm" rows="2"
+                        placeholder="Escribe tu explicación aquí..."></textarea>
+            </div>
+          </div>
+
+          {# Diario Metacognitivo #}
+          <div class="col-md-6">
+            <label class="form-label fw-medium small">📓 Diario de Aprendizaje</label>
+            <textarea name="reflexion" class="form-control form-control-sm" rows="3" required
+                      placeholder="¿Qué descubriste hoy sobre este tema?"></textarea>
+          </div>
+
+          {# Escala Iadov #}
+          <div class="col-md-6">
+            <p class="form-label fw-medium small text-center">¿Cómo te sentiste en esta sesión?</p>
+            <div class="d-flex justify-content-around mt-2" id="iadov-scale">
+              {% for val, label in iadov_choices %}
+                <span class="emoji-iadov" data-valor="{{ val }}"
+                      title="{{ label }}" onclick="seleccionarIadov(this)">
+                  {% if val == 1 %}😞{% elif val == 2 %}😕{% elif val == 3 %}😐{% elif val == 4 %}🙂{% else %}🤩{% endif %}
+                </span>
+              {% endfor %}
+            </div>
+            <input type="hidden" name="puntuacion" id="iadov-input" value="">
+          </div>
+
+          <div class="col-12 text-end">
+            <button type="submit" class="btn btn-dark px-4" id="btn-finalizar" disabled>
+              <iconify-icon icon="iconamoon:check-circle-1-duotone" class="me-1"></iconify-icon>
+              Guardar y Finalizar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>{# end col-lg-7 #}
+
+  {# ═══════════════════════════════════════
+     COLUMNA DERECHA — Chat Socrático
+     ═══════════════════════════════════════ #}
+  <div class="col-lg-5">
+    <div class="fase-card d-flex flex-column" style="height:calc(100% - 0px); min-height:520px;">
+
+      {# Header del chat #}
+      <div class="rounded-top-3 p-3 d-flex align-items-center gap-3"
+           style="background:linear-gradient(135deg,#10b981,#059669)">
+        <div class="fase-badge bg-white" style="color:#059669; font-weight:900">3</div>
+        <div>
+          <h6 class="mb-0 text-white fw-bold">Laboratorio Socrático</h6>
+          <div class="d-flex align-items-center gap-1">
+            <span class="rounded-circle bg-success border border-white" style="width:8px;height:8px;display:inline-block"></span>
+            <small class="text-white opacity-75">Tutor IA Activo</small>
+          </div>
+        </div>
+        <div class="ms-auto">
+          <iconify-icon icon="iconamoon:brain-duotone" class="text-white opacity-75 fs-24"></iconify-icon>
+        </div>
+      </div>
+
+      {# Ventana de mensajes #}
+      <div id="chat-window" class="chat-window flex-grow-1 p-3 bg-light d-flex flex-column gap-2">
+        {# Mensaje inicial del tutor #}
+        <div class="d-flex align-items-start gap-2 fade-in-up" style="animation-delay:.3s">
+          <div class="avatar-bot">🤖</div>
+          <div class="chat-bubble-bot">
+            ¡Hola! Soy tu Tutor Socrático. Cuando estés listo con el desafío de la Fase 2,
+            escribe tu respuesta o razonamiento abajo. ¿Qué operación crees que debes aplicar?
+          </div>
+        </div>
+        {# Historial previo si existe #}
+        {% if interaccion.historial_chat %}
+          <div id="historial-existente">
+            {# Se carga dinámicamente via JS #}
+          </div>
+        {% endif %}
+      </div>
+
+      {# Input del chat #}
+      <div class="p-3 bg-white border-top rounded-bottom-3">
+        <div class="d-flex gap-2">
+          <input type="text" id="chat-input"
+                 class="form-control form-control-sm rounded-pill"
+                 placeholder="Escribe tu respuesta o razonamiento..."
+                 autocomplete="off"
+                 onkeydown="if(event.key==='Enter')enviarMensaje()">
+          <button id="btn-enviar" onclick="enviarMensaje()"
+                  class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                  style="background:#10b981;color:white;width:36px;height:36px;flex-shrink:0">
+            <iconify-icon icon="iconamoon:send-duotone" class="fs-16"></iconify-icon>
+          </button>
+        </div>
+        <div class="text-center mt-2">
+          <small class="text-muted" style="font-size:.7rem">
+            {{ interaccion.intentos }} intento{% if interaccion.intentos != 1 %}s{% endif %} •
+            {{ interaccion.pistas_dadas|length }} pista{% if interaccion.pistas_dadas|length != 1 %}s{% endif %} recibida{% if interaccion.pistas_dadas|length != 1 %}s{% endif %}
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>{# end col-lg-5 #}
+
+</div>{# end row #}
+</div>{# end tutor-wrapper #}
+{% endblock %}
+
+{% block extra_javascript %}
+<script>
+// ── Datos desde Django ──
+const PROBLEMA_ID = {{ problema.pk }};
+const RESPUESTA_CORRECTA = "{{ problema.respuesta_correcta }}";
+const CSRF_TOKEN = "{{ csrf_token }}";
+const ACTIVACION = {{ activacion_json|safe }};
+const HISTORIAL_PREVIO = {{ historial_json|safe }};
+const CHAT_URL = "{% url 'tutor:chat_ajax' %}";
+
+// ── Estado local ──
+let fase1Superada = false;
+let chatActivo = false;
+
+// ══════════════════════════════════════════
+// FASE 1: Activación Cognitiva
+// ══════════════════════════════════════════
+function verificarActivacion(opcion, btn) {
+  const correcta = ACTIVACION.correcta;
+  const botonesAll = document.querySelectorAll('.btn-activacion');
+  botonesAll.forEach(b => b.disabled = true);
+
+  const feedbackEl = document.getElementById('feedback-activacion');
+
+  if (opcion === correcta) {
+    btn.classList.add('correcto');
+    feedbackEl.innerHTML = `
+      <div class="alert alert-success py-2 fade-in-up" style="font-size:.87rem">
+        <strong>¡Excelente observación! 🎉</strong><br>
+        ${ACTIVACION.feedback_correcto || 'Has activado tu conocimiento previo correctamente.'}
+      </div>`;
+    setTimeout(mostrarFase2, 700);
+  } else {
+    btn.classList.add('incorrecto');
+    feedbackEl.innerHTML = `
+      <div class="alert alert-warning py-2 fade-in-up" style="font-size:.87rem">
+        <strong>¡Detente y observa! 👀</strong><br>
+        ${ACTIVACION.feedback_incorrecto || 'Observa con más atención e inténtalo de nuevo.'}
+      </div>`;
+    // Re-habilitar después de 1.5s para volver a intentar
+    setTimeout(() => {
+      botonesAll.forEach(b => b.disabled = false);
+      btn.classList.remove('incorrecto');
+      feedbackEl.innerHTML = '';
+    }, 1800);
+  }
+}
+
+function mostrarFase2() {
+  fase1Superada = true;
+  const fase2 = document.getElementById('fase2');
+  fase2.classList.remove('d-none');
+  fase2.classList.add('fade-in-up');
+  fase2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  chatActivo = true;
+  document.getElementById('chat-input').focus();
+}
+
+// ══════════════════════════════════════════
+// FASE 3: Chat con Gemini
+// ══════════════════════════════════════════
+function enviarMensaje() {
+  if (!chatActivo) {
+    agregarBurbujaTutor('Primero completa la Fase 1 para desbloquear el chat 🔒', false);
+    return;
+  }
+  const input = document.getElementById('chat-input');
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  agregarBurbujaEstudiante(texto);
+  input.value = '';
+  input.disabled = true;
+  document.getElementById('btn-enviar').disabled = true;
+  mostrarTyping();
+
+  fetch(CHAT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+    body: JSON.stringify({ problema_id: PROBLEMA_ID, respuesta: texto }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    ocultarTyping();
+    if (data.tipo === 'correcto') {
+      agregarBurbujaTutor(data.mensaje, true);
+      setTimeout(mostrarFase4, 1200);
+    } else {
+      agregarBurbujaTutor(data.mensaje, false);
+      if (data.seed_question) {
+        setTimeout(() => agregarBurbujaTutor('🤔 ' + data.seed_question, false), 600);
+      }
+    }
+    input.disabled = false;
+    document.getElementById('btn-enviar').disabled = false;
+    input.focus();
+  })
+  .catch(() => {
+    ocultarTyping();
+    agregarBurbujaTutor('El tutor está tomando un respiro ☕. Intenta de nuevo en un momento.', false);
+    input.disabled = false;
+    document.getElementById('btn-enviar').disabled = false;
+  });
+}
+
+function agregarBurbujaEstudiante(texto) {
+  const chatWindow = document.getElementById('chat-window');
+  chatWindow.insertAdjacentHTML('beforeend', `
+    <div class="d-flex align-items-start gap-2 flex-row-reverse fade-in-up" style="animation-duration:.3s">
+      <div class="avatar-user">Tú</div>
+      <div class="chat-bubble-user">${escapeHtml(texto)}</div>
+    </div>`);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function agregarBurbujaTutor(texto, esExito = false) {
+  const chatWindow = document.getElementById('chat-window');
+  const cls = esExito ? 'chat-bubble-correcto' : 'chat-bubble-bot';
+  chatWindow.insertAdjacentHTML('beforeend', `
+    <div class="d-flex align-items-start gap-2 fade-in-up" style="animation-duration:.4s">
+      <div class="avatar-bot">🤖</div>
+      <div class="${cls}">${texto}</div>
+    </div>`);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function mostrarTyping() {
+  const chatWindow = document.getElementById('chat-window');
+  chatWindow.insertAdjacentHTML('beforeend', `
+    <div id="typing" class="d-flex align-items-start gap-2">
+      <div class="avatar-bot">🤖</div>
+      <div class="chat-bubble-bot typing-indicator py-2">
+        <span></span><span></span><span></span>
+      </div>
+    </div>`);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function ocultarTyping() {
+  const el = document.getElementById('typing');
+  if (el) el.remove();
+}
+
+// ══════════════════════════════════════════
+// FASE 4: Cierre Metacognitivo
+// ══════════════════════════════════════════
+function mostrarFase4() {
+  const fase4 = document.getElementById('fase4');
+  fase4.classList.remove('d-none');
+  fase4.classList.add('fade-in-up');
+  setTimeout(() => fase4.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+}
+
+function seleccionarIadov(el) {
+  document.querySelectorAll('.emoji-iadov').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('iadov-input').value = el.dataset.valor;
+  document.getElementById('btn-finalizar').disabled = false;
+}
+
+// ── Cargar historial previo ──
+window.addEventListener('DOMContentLoaded', () => {
+  if (HISTORIAL_PREVIO && HISTORIAL_PREVIO.length > 0) {
+    mostrarFase2();
+    HISTORIAL_PREVIO.forEach(msg => {
+      if (msg.rol === 'user') agregarBurbujaEstudiante(msg.texto);
+      else agregarBurbujaTutor(msg.texto, false);
+    });
+  }
+});
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(text));
+  return div.innerHTML;
+}
+</script>
+{% endblock %}

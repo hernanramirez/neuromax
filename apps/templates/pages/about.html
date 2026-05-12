@@ -1,3 +1,57 @@
-{% extends "base.html" %}
+{% extends 'layout_vertical.html' %}
+{% load static i18n %}
 
+{% block title %}Sobre NeuroMax{% endblock title %}
 
+{% block page_title %}
+{% include "partials/page-title.html" with page_title='Sobre el Proyecto' sub_title='NeuroMax' %}
+{% endblock page_title %}
+
+{% block page_content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-3">Filosofía NeuroMax</h4>
+                <p>NeuroMax es una plataforma educativa diseñada específicamente para los estudiantes de <strong>1er Año de Bachillerato del Colegio Sagrada Familia (COSAFAM)</strong>. Nuestro enfoque combina la neurociencia cognitiva con la inteligencia artificial para crear una experiencia de aprendizaje adaptativa y profunda.</p>
+                
+                <h5 class="mt-4">Nuestros Pilares:</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex align-items-center">
+                        <iconify-icon icon="iconamoon:brain-duotone" class="fs-4 text-primary me-2"></iconify-icon>
+                        <div>
+                            <strong>Motor KST (Knowledge Space Theory):</strong> Identificamos tu frontera de conocimiento para presentarte los desafíos que estás listo para superar.
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <iconify-icon icon="iconamoon:comment-dots-duotone" class="fs-4 text-success me-2"></iconify-icon>
+                        <div>
+                            <strong>Tutor Socrático (IA):</strong> No te damos las respuestas. Te guiamos mediante preguntas que activan tu razonamiento crítico.
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <iconify-icon icon="iconamoon:certificate-badge-duotone" class="fs-4 text-warning me-2"></iconify-icon>
+                        <div>
+                            <strong>Metodología EMT:</strong> Transformamos los malentendidos comunes en oportunidades de aprendizaje profundo.
+                        </div>
+                    </li>
+                </ul>
+                
+                <p class="mt-4">Este proyecto es parte del piloto cerrado para la promoción 2026 de COSAFAM.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card bg-info-subtle border-info">
+            <div class="card-body">
+                <h5 class="text-info-emphasis">¿Necesitas ayuda?</h5>
+                <p class="small">Si tienes problemas para acceder a tus clases o el Tutor IA no responde, contacta a tu profesor asignado.</p>
+                <div class="d-grid">
+                    <a href="mailto:profesor@cosafam.test" class="btn btn-info btn-sm">Contactar Soporte</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock page_content %}
