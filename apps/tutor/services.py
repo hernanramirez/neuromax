@@ -12,7 +12,22 @@ El System Prompt se construye dinámicamente desde la BD — cero hardcoding.
 
 import json
 import logging
+import sys
+import typing
 import warnings
+
+# --- MONKEYPATCH PARA COMPATIBILIDAD CON PYTHON 3.14 ---
+# Pydantic v2.13 (usado por Groq) tiene un problema con typing._eval_type en Python 3.14.
+if sys.version_info >= (3, 14):
+    original_eval_type = typing._eval_type
+
+    def patched_eval_type(t, globalns=None, localns=None, type_params=None, **kwargs):
+        # Python 3.14 cambió la firma de _eval_type y ya no acepta prefer_fwd_module.
+        kwargs.pop("prefer_fwd_module", None)
+        return original_eval_type(t, globalns, localns, type_params, **kwargs)
+
+    typing._eval_type = patched_eval_type
+# --------------------------------------------------------
 
 logger = logging.getLogger(__name__)
 

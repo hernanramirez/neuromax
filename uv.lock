@@ -68,8 +68,11 @@ dependencies = [
     { name = "hiredis" },
     { name = "pillow" },
     { name = "psycopg", extra = ["c"] },
+    { name = "pydantic" },
+    { name = "pydantic-core" },
     { name = "python-slugify" },
     { name = "redis" },
+    { name = "typing-extensions" },
 ]
 
 [package.dev-dependencies]
@@ -116,8 +119,11 @@ requires-dist = [
     { name = "hiredis", specifier = "==3.3.1" },
     { name = "pillow", specifier = "==12.2.0" },
     { name = "psycopg", extras = ["c"], specifier = "==3.3.3" },
+    { name = "pydantic", specifier = ">=2.13.3" },
+    { name = "pydantic-core", specifier = ">=2.46.3" },
     { name = "python-slugify", specifier = "==8.0.4" },
     { name = "redis", specifier = "==7.4.0" },
+    { name = "typing-extensions", specifier = ">=4.15.0" },
 ]
 
 [package.metadata.requires-dev]

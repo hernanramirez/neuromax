@@ -382,7 +382,7 @@ class TutorInteractivoView(EstudianteRequeridoMixin, View):
         # ============================================================
 
         # Obtener o crear la InteraccionIA para esta sesión
-        interaccion, _ = InteraccionIA.objects.get_or_create(
+        interaccion, created = InteraccionIA.objects.get_or_create(
             estudiante=request.user,
             problema=problema,
             defaults={"clase": clase},
@@ -448,7 +448,7 @@ class ChatAjaxView(EstudianteRequeridoMixin, View):
         problema = get_object_or_404(Problema, pk=problema_id, activo=True)
         inscripcion = get_object_or_404(Inscripcion, estudiante=request.user, activa=True)
 
-        interaccion, _ = InteraccionIA.objects.get_or_create(
+        interaccion, created = InteraccionIA.objects.get_or_create(
             estudiante=request.user,
             problema=problema,
             defaults={"clase": inscripcion.clase},
