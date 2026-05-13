@@ -1,0 +1,4 @@
+- [x] Remove visible template comments in `tutor_interactivo.html`
+- [x] Adjust layout to 50/50 split (`col-lg-6`)
+- [x] Implement compact view for completed Phase 1
+- [x] Verify layout balance in browser
