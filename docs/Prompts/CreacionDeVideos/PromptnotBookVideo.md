@@ -206,6 +206,14 @@ Visuales: Mostrar los números 6 y 4 buscando un "amigo en común" y abrazando a
 
 ---
 
+Actúa como un experto en pedagogía infantil y director de arte de un canal de ciencia para niños (estilo "Beakman" o "Bill Nye"). Tu objetivo es generar el guion para un video ultracorto (máximo 1 minuto) muy dinámico, gráfico e instruccional en español latino americano.
+
+
+Estás ayudando a estudiantes de 10 años a resolver este misterio matemático: "¡Peligro biológico! Una bacteria se duplica. Tenemos la expresión 2⁴ (dos a la cuarta). ¡Cuidado! Muchos científicos novatos dicen que es 2x4=8... ¡Error fatal!". NO debes darles la respuesta final, solo guiarlos gráficamente.
+
+
+Genera el contenido respetando estrictamente esta estructura de Guion Técnico, incluyendo indicaciones de voz (tono) y visuales precisas en cada paso:
+
 ### Prompt para Desafío 5: Potenciación: Concepto y Cálculo (EX-1)
 **Objetivo del video:** Dar pistas para calcular 2⁴.
 
@@ -226,6 +234,15 @@ Visuales: Mostrar una bacteria clonándose, y una gran "X" roja tachando un "2x4
 ```
 
 ---
+
+Actúa como un experto en pedagogía infantil y director de arte de un canal de ciencia para niños (estilo "Beakman" o "Bill Nye"). Tu objetivo es generar el guion para un video ultracorto (máximo 1 minuto) muy dinámico, gráfico e instruccional en español latino americano.
+
+
+Estás ayudando a estudiantes de 10 años a resolver este misterio matemático: "¡Sistemas de energía listos! Tenemos la energía a³ multiplicándose por a⁴. ¡Alerta de cortocircuito! Algunos multiplican el 3 por el 4 y les da 12. ¡Eso haría explotar la máquina!". NO debes darles la respuesta final, solo guiarlos gráficamente.
+
+
+Genera el contenido respetando estrictamente esta estructura de Guion Técnico, incluyendo indicaciones de voz (tono) y visuales precisas en cada paso:
+
 
 ### Prompt para Desafío 6: Producto de Potencias de Igual Base (EX-2)
 **Objetivo del video:** Dar pistas para calcular a³ × a⁴.
@@ -248,6 +265,15 @@ Visuales: Mostrar las 'a' multiplicándose y los numeritos 3 y 4 bajando para su
 
 ---
 
+
+Actúa como un experto en pedagogía infantil y director de arte de un canal de ciencia para niños (estilo "Beakman" o "Bill Nye"). Tu objetivo es generar el guion para un video ultracorto (máximo 1 minuto) muy dinámico, gráfico e instruccional en español latino americano.
+
+
+Estás ayudando a estudiantes de 10 años a resolver este misterio matemático: "¡Ingenieros espaciales! Tenemos cubos dentro de cubos. La fórmula es ((2³)²). Algunos creen que deben sumar el 3 y el 2 para tener 2⁵... ¡Cuidado, la nave se caería!". NO debes darles la respuesta final, solo guiarlos gráficamente.
+
+
+Genera el contenido respetando estrictamente esta estructura de Guion Técnico, incluyendo indicaciones de voz (tono) y visuales precisas en cada paso:
+
 ### Prompt para Desafío 7: Potencia de una Potencia (EX-3)
 **Objetivo del video:** Dar pistas para resolver ((2³)²).
 
@@ -268,6 +294,16 @@ Visuales: Mostrar exponentes chocando a través de un paréntesis y convirtiénd
 ```
 
 ---
+
+
+Actúa como un experto en pedagogía infantil y director de arte de un canal de ciencia para niños (estilo "Beakman" o "Bill Nye"). Tu objetivo es generar el guion para un video ultracorto (máximo 1 minuto) muy dinámico, gráfico e instruccional en español latino americano.
+
+
+Estás ayudando a estudiantes de 10 años a resolver este misterio matemático: "¡Científicos, a los laboratorios! Queremos simplificar la fórmula (a³b²) dividida entre (ab). ¡Peligro! Algunos creen que si dividen letras iguales desaparecen en un gran cero. ¡No!". NO debes darles la respuesta final, solo guiarlos gráficamente.
+
+
+Genera el contenido respetando estrictamente esta estructura de Guion Técnico, incluyendo indicaciones de voz (tono) y visuales precisas en cada paso:
+
 
 ### Prompt para Desafío 8: División de Potencias y Simplificación (EX-4)
 **Objetivo del video:** Dar pistas para simplificar (a³b²)/(ab).

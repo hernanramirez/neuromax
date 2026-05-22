@@ -146,6 +146,22 @@
 
   <div class="col-lg-6">
 
+    {# ── VIDEO INTRODUCTORIO ── #}
+    {% if video_filename %}
+    <div id="video-intro" class="fase-card p-4 mb-3 fade-in-up" style="animation-delay:.05s">
+      <div class="d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
+        <div class="fase-badge text-white" style="background: #0dcaf0;"><iconify-icon icon="iconamoon:video-camera-duotone"></iconify-icon></div>
+        <h5 class="mb-0 fw-semibold text-info">Video Introductorio</h5>
+      </div>
+      <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm">
+        <video controls class="w-100 h-100">
+          <source src="{% static 'videos/'|add:video_filename %}" type="video/mp4">
+          Tu navegador no soporta reproducción de video.
+        </video>
+      </div>
+    </div>
+    {% endif %}
+
     {# ── FASE 1: Activación Cognitiva (Motor KST) ── #}
     <div id="fase1" class="fase-card p-4 mb-3 fade-in-up" style="animation-delay:.1s">
       <div class="d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">

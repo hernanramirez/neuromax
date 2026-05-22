@@ -409,6 +409,18 @@ class TutorInteractivoView(EstudianteRequeridoMixin, View):
             "feedback_incorrecto": activacion_raw.get("feedback_incorrecto", ""),
         }
 
+        video_mapping = {
+            ("EXPONENCIACION", 1): "Exp_01_Peligro_Exponencial.mp4",
+            ("EXPONENCIACION", 2): "Exp_02_Poder_de_los_Exponentes.mp4",
+            ("EXPONENCIACION", 3): "Exp_03_Misterio_del_Exponente.mp4",
+            ("EXPONENCIACION", 4): "Exp_04_Simplifica.mp4",
+            ("FRACCIONES", 1): "Frac_01_Misterio_de_fracciones.mp4",
+            ("FRACCIONES", 2): "Frac_02_Magia_con_Fracciones.mp4",
+            ("FRACCIONES", 3): "Frac_03_El_enigma_de_la_lechuga.mp4",
+            ("FRACCIONES", 4): "Frac_04_Fracciones_heterogéneas.mp4",
+        }
+        video_filename = video_mapping.get((problema.tema, problema.nivel_kst))
+
         context = {
             "problema": problema,
             "interaccion": interaccion,
@@ -417,6 +429,7 @@ class TutorInteractivoView(EstudianteRequeridoMixin, View):
             "activacion": activacion,
             "activacion_json": json.dumps(activacion, ensure_ascii=False),
             "iadov_choices": EvaluacionIadov.Puntuacion.choices,
+            "video_filename": video_filename,
         }
         return render(request, self.template_name, context)
 
