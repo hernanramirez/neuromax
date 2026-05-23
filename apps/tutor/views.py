@@ -388,13 +388,12 @@ class TutorInteractivoView(EstudianteRequeridoMixin, View):
             defaults={"clase": clase},
         )
 
-        # Si ya fue resuelto, redirigir a mi clase
+        # Si ya fue resuelto, mostrar un mensaje pero permitir ver la resolución
         if interaccion.respondio_correctamente:
             messages.info(
                 request,
-                _(f"¡Ya completaste «{problema.titulo}»! Continúa con el siguiente problema."),
+                _(f"Estás viendo la resolución de «{problema.titulo}». Este ejercicio ya fue completado."),
             )
-            return redirect("tutor:mi_clase")
 
         import json as _json
         from .models import EvaluacionIadov

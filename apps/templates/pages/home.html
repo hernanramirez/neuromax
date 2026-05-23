@@ -5,7 +5,7 @@
 {% block title %}Inicio{% endblock title %}
 
 {% block page_title %}
-{% include "partials/page-title.html" with page_title='Inicio' sub_title='Sistema NFC' %}
+{% include "partials/page-title.html" with page_title='Inicio' sub_title='Neuro Max' %}
 {% endblock page_title %}
 
 {% block page_content %}
@@ -33,7 +33,7 @@
                         {% endif %}
                     </div>
                     <div class="col-md-5 d-none d-md-block text-center">
-                        <iconify-icon icon="iconamoon:brain-duotone" style="font-size: 180px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));"></iconify-icon>
+                        <img src="{% static 'images/logo_transparent.png' %}" alt="NeuroMax Logo" class="img-fluid bg-white p-4 shadow" style="max-height: 240px; border-radius: 24px; object-fit: contain;">
                     </div>
                 </div>
             </div>

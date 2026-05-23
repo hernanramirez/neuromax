@@ -133,6 +133,23 @@
   margin-bottom: 0 !important;
   font-size: 0.9rem;
 }
+
+/* ── Iadov Scale ── */
+.emoji-iadov {
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: grayscale(100%) opacity(0.5);
+}
+.emoji-iadov:hover {
+  transform: scale(1.15);
+  filter: grayscale(0%) opacity(0.8);
+}
+.emoji-iadov.selected {
+  transform: scale(1.3);
+  filter: grayscale(0%) opacity(1);
+  text-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
 </style>
 {% endblock %}
 
@@ -516,6 +533,8 @@ function seleccionarIadov(el) {
 
 // ── Cargar historial previo ──
 window.addEventListener('DOMContentLoaded', () => {
+  const completado = {{ interaccion.respondio_correctamente|yesno:"true,false" }};
+
   if (HISTORIAL_PREVIO && HISTORIAL_PREVIO.length > 0) {
     // Si hay historial, ya pasó la Fase 1
     document.getElementById('fase1').classList.add('completada');
@@ -523,12 +542,23 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('chat-column').classList.remove('d-none');
     document.getElementById('main-tutor-row').classList.remove('justify-content-center');
     fase1Superada = true;
-    chatActivo = true;
+    chatActivo = !completado;
     
     HISTORIAL_PREVIO.forEach(msg => {
       if (msg.rol === 'user') agregarBurbujaEstudiante(msg.texto);
       else agregarBurbujaTutor(msg.texto, false);
     });
+
+    if (completado) {
+      const chatInput = document.getElementById('chat-input');
+      const btnEnviar = document.getElementById('btn-enviar');
+      chatInput.disabled = true;
+      btnEnviar.disabled = true;
+      chatInput.placeholder = "Este ejercicio ya está completado.";
+      
+      // Mostrar resumen de Fase 4 si se quiere o dejar oculto.
+      // Por ahora, simplemente inhabilitamos más acciones.
+    }
   }
 });
 
