@@ -21,6 +21,7 @@ urlpatterns = [
     # --- Dashboard del Docente (multi-clase) ---
     path("tutor/", views.DashboardDocenteView.as_view(), name="dashboard"),
     path("tutor/clase/<int:pk>/", views.DetalleClaseView.as_view(), name="detalle_clase"),
+    path("tutor/clase/<int:pk>/csv/", views.ExportarClaseCSVView.as_view(), name="exportar_clase_csv"),
 
     # --- Espacio del Estudiante ---
     path("tutor/mi-clase/", views.MiClaseView.as_view(), name="mi_clase"),

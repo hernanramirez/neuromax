@@ -101,6 +101,9 @@
       Estudiantes ({{ clase.total_estudiantes }})
     </h5>
     <div class="d-flex gap-2">
+      <a href="{% url 'tutor:exportar_clase_csv' clase.pk %}" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
+        <iconify-icon icon="iconamoon:download-duotone"></iconify-icon> CSV
+      </a>
       <input type="search" id="buscarEstudiante" class="form-control form-control-sm"
              placeholder="Buscar estudiante..." style="width:200px"
              oninput="filtrarTabla(this.value)">

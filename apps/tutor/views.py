@@ -19,13 +19,15 @@ Dashboard:
   /tutor/guardar-cierre/<pk>/ → GuardarCierreView
 """
 
+import csv
 import json
 
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Avg, Count, Q
-from django.http import JsonResponse
+from django.db.models import Avg, Count, Q
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -265,6 +267,130 @@ class DetalleClaseView(ProfesorRequeridoMixin, View):
             "problemas": Problema.objects.filter(activo=True).order_by("tema", "nivel_kst"),
         }
         return render(request, self.template_name, context)
+
+
+class ExportarClaseCSVView(ProfesorRequeridoMixin, View):
+    """
+    GET /tutor/clase/<pk>/csv/
+    Exporta los datos tabulados de la clase en formato CSV para análisis estadístico.
+    Incluye además los comentarios (reflexión y análisis de error) de cada reto resuelto.
+    """
+
+    def get(self, request, pk):
+        clase = get_object_or_404(Clase, pk=pk, profesor=request.user)
+
+        inscripciones = (
+            Inscripcion.objects.filter(clase=clase, activa=True)
+            .select_related("estudiante", "estudiante__perfil")
+        )
+
+        problemas = Problema.objects.filter(activo=True).order_by("tema", "nivel_kst")
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="clase_{clase.pk}_estadisticas_y_comentarios.csv"'
+
+        writer = csv.writer(response)
+        
+        headers = [
+            "Estudiante", 
+            "Email", 
+            "Nivel KST", 
+            "Problemas Resueltos", 
+            "Total Interacciones", 
+            "Iadov Promedio", 
+            "Último Acceso",
+            "Total Pistas Solicitadas",
+            "Tiempo Total (min)"
+        ]
+        
+        for p in problemas:
+            headers.append(f"Estado: {p.titulo}")
+            headers.append(f"Intentos: {p.titulo}")
+            headers.append(f"Pistas: {p.titulo}")
+            headers.append(f"Tiempo (min): {p.titulo}")
+            headers.append(f"Reflexión: {p.titulo}")
+            headers.append(f"Análisis Error: {p.titulo}")
+            
+        writer.writerow(headers)
+
+        for ins in inscripciones:
+            interacciones = InteraccionIA.objects.filter(
+                estudiante=ins.estudiante, clase=clase
+            )
+            interacciones_map = {ia.problema_id: ia for ia in interacciones}
+            
+            max_kst = interacciones.aggregate(max=Avg("fase_kst_alcanzada"))["max"] or 0
+            resueltos = interacciones.filter(respondio_correctamente=True).count()
+            iadov = (
+                EvaluacionIadov.objects.filter(interaccion__estudiante=ins.estudiante, interaccion__clase=clase)
+                .aggregate(prom=Avg("puntuacion"))["prom"]
+            ) or None
+            
+            ultimo_acceso = interacciones.order_by("-timestamp_inicio").values_list("timestamp_inicio", flat=True).first()
+            if ultimo_acceso:
+                ultimo_acceso_str = ultimo_acceso.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                ultimo_acceso_str = "Sin actividad"
+
+            total_pistas = 0
+            total_tiempo_segundos = 0
+
+            for ia in interacciones:
+                total_pistas += len(ia.pistas_dadas)
+                if ia.timestamp_fin and ia.timestamp_inicio:
+                    total_tiempo_segundos += (ia.timestamp_fin - ia.timestamp_inicio).total_seconds()
+
+            row = [
+                ins.estudiante.perfil.nombre_completo or ins.estudiante.email,
+                ins.estudiante.email,
+                round(max_kst, 1),
+                resueltos,
+                interacciones.count(),
+                round(iadov, 1) if iadov else "",
+                ultimo_acceso_str,
+                total_pistas,
+                round(total_tiempo_segundos / 60, 2)
+            ]
+
+            diarios = DiarioMetacognitivo.objects.filter(
+                interaccion__estudiante=ins.estudiante,
+                interaccion__clase=clase
+            )
+            diarios_map = {d.interaccion.problema_id: d for d in diarios}
+
+            for p in problemas:
+                ia = interacciones_map.get(p.pk)
+                diario = diarios_map.get(p.pk)
+                
+                if not ia:
+                    estado = "No iniciado"
+                elif ia.respondio_correctamente:
+                    estado = "Completado"
+                else:
+                    estado = "En progreso/Abandonado"
+
+                intentos = ia.intentos if ia else 0
+                pistas = len(ia.pistas_dadas) if ia else 0
+                
+                tiempo_min = ""
+                if ia and ia.timestamp_fin and ia.timestamp_inicio:
+                    tiempo_min = round((ia.timestamp_fin - ia.timestamp_inicio).total_seconds() / 60, 2)
+                
+                row.append(estado)
+                row.append(intentos)
+                row.append(pistas)
+                row.append(tiempo_min)
+
+                if diario:
+                    row.append(diario.reflexion_texto)
+                    row.append(diario.analisis_error_texto)
+                else:
+                    row.append("")
+                    row.append("")
+
+            writer.writerow(row)
+
+        return response
 
 
 # ---------------------------------------------------------------------------
